@@ -6,6 +6,7 @@ from xillybus_accel import *
 from convert_img import *
 from webcam_server import *
 
+import sys
 import numpy
 
 def webcam_init():
@@ -15,19 +16,17 @@ def webcam_init():
   usbcam = cv2.VideoCapture(-1)
   #usbcam = cv2.VideoCapture('/home/zeddev/Videos/snake.mp4')
 
-  netcam = NetworkReader()
-
   sse = XillybusPipe(32)
 
   buf_in = numpy.empty((480,640,4), numpy.uint8)
   
-  if webcam.isOpened(): # try to get the first frame
-    rval, frame = webcam.read()
+  if usbcam.isOpened(): # try to get the first frame
+    rval, frame = usbcam.read()
   else:
     rval = False
     frame = None
   
-  return (usbcam, netcam, sse, frame, rval, buf_in)
+  return (usbcam, sse, frame, rval, buf_in)
 
 def process_rgb(frame, buf_in = None):
   if buf_in is None:
@@ -49,8 +48,11 @@ def change_stream(stream, reset=False):
   mem.close()
 
 if __name__ == '__main__':
-  (usbcam, netcam, sse, frame, rval, buf_in) = webcam_init()
+  (usbcam, sse, frame, rval, buf_in) = webcam_init()
   
+  #netcam = NetworkReader()
+  netcam = None
+
   select = 0
   octave = 0
   change = True
@@ -62,15 +64,15 @@ if __name__ == '__main__':
 
   while rval:
     try:
-      cv2.imshow('Input', frame)
       buf_out = process_rgb(frame,buf_in) # Do we need buf_in?
-      cv2.putText(buf_out, str(sse.last_time)
+      cv2.putText(frame, str(sse.last_time),
         (32,32), cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255))
+      cv2.imshow('Input', frame)
 
       cv2.imshow('Output', buf_out)
       key = cv2.waitKey(10)
       
-      if use_net:
+      if netcam is not None and use_net:
         rval = True
         netcam.update()
         frame = netcam.img
@@ -79,6 +81,13 @@ if __name__ == '__main__':
       
       if key == 27: # exit on ESC
         break
+      elif netcam is not None and key == ord('c'):
+        use_net = not use_net
+        if use_net:
+          c = 'network'
+        else:
+          c = 'USB'
+        print 'Switching to %s camera' % c
       elif key in sel_list:
         select = sel_list.index(key)
         print 'Selecting stream %d' % select

@@ -130,13 +130,13 @@ class NetworkReader(threading.Thread):
   def update(self):
     self.ask()
     self.get_img()
-    cv2.imshow('test',self.img)
-    cv2.waitKey(1)
 
   def run(self):
     while(True):
       try:
         self.update()
+        cv2.imshow('test',self.img)
+        cv2.waitKey(1)
         time.sleep(1.0)
         print 'Looped'
       except KeyboardInterrupt:
