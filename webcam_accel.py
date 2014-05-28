@@ -3,10 +3,12 @@
 import cv2
 
 from xillybus_accel import *
+from convert_img import *
+
 import numpy
 
 def webcam_init():
-  #cv2.namedWindow('Input')
+  cv2.namedWindow('Input')
   cv2.namedWindow('Output')
 
   webcam = cv2.VideoCapture(-1)
@@ -30,7 +32,16 @@ def process_rgb(frame, buf_in = None):
 
   dim = frame.shape
   buf_in[0:dim[0],0:dim[1],0:dim[2]] = frame
-  return numpy.ndarray((480,640,4),numpy.uint8, sse.process(buf_in))
+  
+  result = sse.process(buf_in)
+  #np_arr = numpy.ndarray((480,640,4), numpy.uint8, result)
+  #return np_arr[:,:,0:3]
+
+  #cmap = numpy.ndarray((256,3),numpy.uint8,colormap())
+  cmap = colormap()
+  conv = [cmap[p&0xFF] for p in result]
+  np_arr = numpy.ndarray((480,640,3), numpy.uint8, conv)
+  return np_arr
 
 def change_stream(stream, reset=False):
   mem = open('/dev/xillybus_mem_8','w')
@@ -45,9 +56,9 @@ if __name__ == '__main__':
 
   while rval:
     try:
-      #cv2.imshow('Input', frame)
+      cv2.imshow('Input', frame)
       buf_out = process_rgb(frame)
-      cv2.imshow('Output', buf_out[:,:,0:3])
+      cv2.imshow('Output', buf_out)
  
       rval, frame = webcam.read()
       key = cv2.waitKey(10)
