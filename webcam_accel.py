@@ -9,8 +9,8 @@ def webcam_init():
   #cv2.namedWindow('Input')
   cv2.namedWindow('Output')
 
-  #webcam = cv2.VideoCapture(-1)
-  webcam = cv2.VideoCapture('/home/zeddev/Videos/snake.mp4')
+  webcam = cv2.VideoCapture(-1)
+  #webcam = cv2.VideoCapture('/home/zeddev/Videos/snake.mp4')
 
   sse = XillybusPipe(32)
 
@@ -53,12 +53,21 @@ if __name__ == '__main__':
       key = cv2.waitKey(10)
       if key == 27: # exit on ESC
         break
-      elif key in range(ord('0'),ord('9')):
+      elif key == ord('`'):
+        print 'Selecting stream 0'
+	change_stream(0,True)
+	process_rgb(frame)
+        change_stream(0)
+      elif key in range(ord('1'),ord('9')+1):
         print 'Selecting stream %d' % (key-0x30)
-        change_stream(key-0x30,True)
-      elif key == 0x2D:
+	change_stream(0,True)
+	process_rgb(frame)
+        change_stream(key-0x30)
+      elif key == ord('0'):
         print 'Selecting stream 10'
-        change_stream(10,True)
+	change_stream(0,True)
+	process_rgb(frame)
+        change_stream(10)
 
     except KeyboardInterrupt:
       break
