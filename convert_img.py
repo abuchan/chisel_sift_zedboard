@@ -3,9 +3,7 @@
 import sys
 import cv2
 
-scale = 16
-
-def red(gray):
+def red(gray, scale=16):
   if gray < 128:
     out = gray * scale
   else:
@@ -16,7 +14,7 @@ def red(gray):
 
   return out
 
-def blue(gray):
+def blue(gray, scale=16):
   inv = 255-gray
  
   if inv < 128:
@@ -29,18 +27,22 @@ def blue(gray):
 
   return out
 
-filename = sys.argv[1] 
-img = cv2.imread(filename)
+def colormap(scale=16):
+  return [[red(i,scale), 0, blue(i,scale)] for i in range(256)]
 
-cmap = [[red(i), 0, blue(i)] for i in range(256)]
+if __name__ == '__main__':
+  filename = sys.argv[1] 
+  img = cv2.imread(filename)
 
-s = img.shape
-for r in range(s[0]):
-  for c in range(s[1]):
-    gray = img[r,c,0]
-    img[r,c,:] = cmap[gray]
+  cmap = colormap()
 
-l = filename.split('.')
-outname = l[0] + '_conv.png'
-print outname
-cv2.imwrite(outname, img)
+  s = img.shape
+  for r in range(s[0]):
+    for c in range(s[1]):
+      gray = img[r,c,0]
+      img[r,c,:] = cmap[gray]
+
+  l = filename.split('.')
+  outname = l[0] + '_conv.png'
+  print outname
+  cv2.imwrite(outname, img)
