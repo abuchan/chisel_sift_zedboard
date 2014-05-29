@@ -4,6 +4,7 @@ import cv2
 
 from xillybus_accel import *
 from convert_img import *
+from webcam_server import *
 
 import numpy
 
@@ -11,8 +12,10 @@ def webcam_init():
   cv2.namedWindow('Input')
   cv2.namedWindow('Output')
 
-  webcam = cv2.VideoCapture(-1)
-  #webcam = cv2.VideoCapture('/home/zeddev/Videos/snake.mp4')
+  usbcam = cv2.VideoCapture(-1)
+  #usbcam = cv2.VideoCapture('/home/zeddev/Videos/snake.mp4')
+
+  netcam = NetworkReader()
 
   sse = XillybusPipe(32)
 
@@ -24,7 +27,7 @@ def webcam_init():
     rval = False
     frame = None
   
-  return (webcam, sse, frame, rval, buf_in)
+  return (usbcam, netcam, sse, frame, rval, buf_in)
 
 def process_rgb(frame, buf_in = None):
   if buf_in is None:
@@ -46,11 +49,13 @@ def change_stream(stream, reset=False):
   mem.close()
 
 if __name__ == '__main__':
-  (webcam, sse, frame, rval, buf_in) = webcam_init()
+  (usbcam, netcam, sse, frame, rval, buf_in) = webcam_init()
   
   select = 0
   octave = 0
   change = True
+
+  use_net = False
 
   sel_list = map(ord,['`','1','2','3','4','5','6','7','8','9','0'])
   oct_list = map(ord,['q','w','e','r'])
@@ -58,11 +63,20 @@ if __name__ == '__main__':
   while rval:
     try:
       cv2.imshow('Input', frame)
-      buf_out = process_rgb(frame)
+      buf_out = process_rgb(frame,buf_in) # Do we need buf_in?
+      cv2.putText(buf_out, str(sse.last_time)
+        (32,32), cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255))
+
       cv2.imshow('Output', buf_out)
- 
-      rval, frame = webcam.read()
       key = cv2.waitKey(10)
+      
+      if use_net:
+        rval = True
+        netcam.update()
+        frame = netcam.img
+      else:
+        rval, frame = usbcam.read()
+      
       if key == 27: # exit on ESC
         break
       elif key in sel_list:
@@ -77,7 +91,7 @@ if __name__ == '__main__':
       if change:
         change = False
         change_stream(0,True)
-        process_rgb(frame)
+        process_rgb(frame,buf_in)
         change_stream(octave*16 + select)
       
     except KeyboardInterrupt:
