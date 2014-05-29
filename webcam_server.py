@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/python
 
 import cv2
 import socket
@@ -137,3 +137,16 @@ class NetworkReader(threading.Thread):
         self.close_connections()
         break
 
+if __name__ == '__main__':
+  print 'Starting camera reader'
+  c = CamReader()
+  c.start()
+  
+  while(True):
+    try:
+      time.sleep(1)
+    except KeyboardInterrupt:
+      break
+
+  print 'Releasing camera'
+  c.cam.release()
