@@ -34,14 +34,14 @@ def process_rgb(frame, buf_in = None):
   buf_in[0:dim[0],0:dim[1],0:dim[2]] = frame
   
   result = sse.process(buf_in)
-  #np_arr = numpy.ndarray((480,640,4), numpy.uint8, result)
-  #return np_arr[:,:,0:3]
+  np_arr = numpy.ndarray((480,640,4), numpy.uint8, result)
+  return np_arr[:,:,0:3]
 
   #cmap = numpy.ndarray((256,3),numpy.uint8,colormap())
-  cmap = colormap()
-  conv = [cmap[p&0xFF] for p in result]
-  np_arr = numpy.ndarray((480,640,3), numpy.uint8, conv)
-  return np_arr
+  #cmap = colormap()
+  #conv = [cmap[p&0xFF] for p in result]
+  #np_arr = numpy.ndarray((480,640,3), numpy.uint8, conv)
+  #return np_arr
 
 def change_stream(stream, reset=False):
   mem = open('/dev/xillybus_mem_8','w')
