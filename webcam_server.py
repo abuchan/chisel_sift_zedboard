@@ -8,6 +8,7 @@ import time
 import subprocess
 
 host = '10.0.0.1'
+#host = 'localhost'
 port = 50007
 
 img_w = 640
