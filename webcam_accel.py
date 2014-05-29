@@ -37,12 +37,6 @@ def process_rgb(frame, buf_in = None):
   np_arr = numpy.ndarray((480,640,4), numpy.uint8, result)
   return np_arr[:,:,0:3]
 
-  #cmap = numpy.ndarray((256,3),numpy.uint8,colormap())
-  #cmap = colormap()
-  #conv = [cmap[p&0xFF] for p in result]
-  #np_arr = numpy.ndarray((480,640,3), numpy.uint8, conv)
-  #return np_arr
-
 def change_stream(stream, reset=False):
   mem = open('/dev/xillybus_mem_8','w')
   if reset:
@@ -53,6 +47,13 @@ def change_stream(stream, reset=False):
 
 if __name__ == '__main__':
   (webcam, sse, frame, rval, buf_in) = webcam_init()
+  
+  select = 0
+  octave = 0
+  change = True
+
+  sel_list = map(ord,['`','1','2','3','4','5','6','7','8','9','0'])
+  oct_list = map(ord,['q','w','e','r'])
 
   while rval:
     try:
@@ -64,21 +65,20 @@ if __name__ == '__main__':
       key = cv2.waitKey(10)
       if key == 27: # exit on ESC
         break
-      elif key == ord('`'):
-        print 'Selecting stream 0'
-	change_stream(0,True)
-	process_rgb(frame)
-        change_stream(0)
-      elif key in range(ord('1'),ord('9')+1):
-        print 'Selecting stream %d' % (key-0x30)
-	change_stream(0,True)
-	process_rgb(frame)
-        change_stream(key-0x30)
-      elif key == ord('0'):
-        print 'Selecting stream 10'
-	change_stream(0,True)
-	process_rgb(frame)
-        change_stream(10)
-
+      elif key in sel_list:
+        select = sel_list.index(key)
+        print 'Selecting stream %d' % select
+        change = True
+      elif key in oct_list:
+        octave = oct_list.index(key)
+        print 'Selecting octave %d' % octave
+        change = True
+      
+      if change:
+        change = False
+        change_stream(0,True)
+        process_rgb(frame)
+        change_stream(octave*16 + select)
+      
     except KeyboardInterrupt:
       break
