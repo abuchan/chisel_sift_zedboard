@@ -1,5 +1,6 @@
 import numpy
 import threading
+import time
 
 class WriteThread(threading.Thread):
   def __init__(self, data, device):
@@ -18,8 +19,15 @@ class XillybusPipe():
     self.w = open('/dev/xillybus_write_%d' % nbits, 'w')
 
   def process(self, data_in):
+    total_size = data_in.size * data_in.dtype.itemsize
+
+    start_time = time.time()
     self.w.write(data_in)
-    return self.r.read(data_in.size * data_in.dtype.itemsize)
+    result = self.r.read(total_size)
+    stop_time = time.time()
+    
+    self.last_time = stop_time-start_time
+    return result
 
   def close(self):
     self.r.close()
