@@ -29,6 +29,13 @@ class XillybusPipe():
     self.last_time = stop_time-start_time
     return result
 
+  def read(self, n_bytes):
+    start_time = time.time()
+    result = self.r.read(n_bytes)
+    stop_time = time.time()
+    self.last_time = stop_time-start_time
+    return result
+
   def close(self):
     self.r.close()
     self.w.close()

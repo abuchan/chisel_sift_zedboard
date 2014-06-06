@@ -66,7 +66,7 @@ if __name__ == '__main__':
     try:
       buf_out = process_rgb(frame,buf_in) # Do we need buf_in?
       cv2.putText(frame, str(sse.last_time),
-        (32,32), cv2.FONT_HERSHEY_PLAIN, 2, (255,255,255))
+        (32,32), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,0))
       cv2.imshow('Input', frame)
 
       cv2.imshow('Output', buf_out)
@@ -101,7 +101,9 @@ if __name__ == '__main__':
         change = False
         change_stream(0,True)
         process_rgb(frame,buf_in)
-        change_stream(octave*16 + select)
+        #change_stream(octave*16 + select)
+        print '0x%02X' % (octave*16 + select)
+        change_stream(select)
       
     except KeyboardInterrupt:
       break
