@@ -2,9 +2,13 @@
 
 from xillybus_accel import *
 import threading
-from webcam_accel import raw_to_np
 import cv2
 import time
+import numpy
+
+def raw_to_np(data):
+  np_arr = numpy.ndarray((480,640,4), numpy.uint8, data)
+  return np_arr[:,:,0:3]
 
 class FrameBuffer(threading.Thread):
   def __init__(self):
