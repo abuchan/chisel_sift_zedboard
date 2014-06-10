@@ -21,6 +21,10 @@ class FrameBuffer(threading.Thread):
       quitting = False
       self.lock.acquire()
       if (self.is_open):
+        sync = self.pipe.read(4)
+        while sync != '\x00\x00\x00\xFF':
+          sync = self.pipe.read(4)
+        
         self.write_data = self.pipe.read(640*480*4)
         self.n_frames = self.n_frames + 1
       else:
@@ -35,8 +39,8 @@ class FrameBuffer(threading.Thread):
 
   def close(self):
     self.lock.acquire()
-    
     self.is_open = False
+    self.lock.release()
 
 if __name__ == '__main__':
   fb = FrameBuffer()
