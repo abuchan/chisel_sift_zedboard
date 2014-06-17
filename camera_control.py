@@ -1,56 +1,45 @@
 #!/usr/bin/python
 
 import sys
-from pyBusPirate.BinaryMode.I2C import *
+from i2c_stream import *
 
-def camera_on(bp_i2c):
-  bp_i2c.send_start_bit()
-  bp_i2c.bulk_trans(3, [0x78, 0x03, 0x02])
-  bp_i2c.send_stop_bit()
-  print 'Camera on'
+class CameraControl:
+  def __init__(self, useBP = False):
+    if(useBP):
+      self.i2c = BP_I2C()
+    else:
+      self.i2c = XB_I2C()
 
-def camera_off(bp_i2c):
-  bp_i2c.send_start_bit()
-  bp_i2c.bulk_trans(3, [0x78, 0x03, 0x40])
-  bp_i2c.send_stop_bit()
-  print 'Camera off'
+  def turn_on(self):
+    self.i2c.start()
+    self.i2c.write([0x78, 0x03, 0x02])
+    self.i2c.stop()
+    print 'Camera on'
 
-def do_command(bp_i2c, cmd):
-  if cmd == 'n':
-    camera_on(bp_i2c)
-  elif cmd == 'f':
-    camera_off(bp_i2c)
+  def turn_off(self):
+    self.i2c.start()
+    self.i2c.write([0x78, 0x03, 0x40])
+    self.i2c.stop()
+    print 'Camera off'
 
-def i2c_setup():
-  i2c = I2C('/dev/ttyUSB0', 115200)
-  if not i2c.BBmode():
-    print 'Failed to enter BitBang mode'
-    sys.exit()
-
-  if not i2c.enter_I2C():
-    print 'Failed to enter I2C mode'
-    sys.exit()
-
-  if not i2c.set_speed(I2CSpeed._400KHZ):
-    print 'Failed to set I2C speed'
-    sys.exit()
-
-  i2c.timeout(0.2)
-  return i2c
-
-def i2c_close(bp_i2c):
-  if not bp_i2c.resetBP():
-    print 'Failed to reset BP to user terminal'
+  def do_command(self, cmd):
+    if cmd == 'n':
+      self.turn_on()
+    elif cmd == 'f':
+      self.turn_off()
   
+  def close(self):
+    self.i2c.close()
+
 if __name__ == '__main__':
-  bp_i2c = i2c_setup()
+  cc = CameraControl()
 
   if len(sys.argv) > 1:
-    do_command(bp_i2c, sys.argv[1])
+    cc.do_command(sys.argv[1])
   else:
     cmd = raw_input('Command: ')
     while cmd != 'q':
-      do_command(bp_i2c, cmd)
+      cc.do_command(cmd)
       cmd = raw_input('Command: ')
 
-  i2c_close(bp_i2c)
+  cc.close()
