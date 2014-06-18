@@ -15,9 +15,13 @@ class WriteThread(threading.Thread):
 
 class XillybusPipe():
   def __init__(self, nbits):
-    self.r = open('/dev/xillybus_read_%d' % nbits,'r')
-    self.w = open('/dev/xillybus_write_%d' % nbits, 'w')
+    self.nbits = nbits
+    self.open()
 
+  def open(self):
+    self.r = open('/dev/xillybus_read_%d' % self.nbits,'r')
+    self.w = open('/dev/xillybus_write_%d' % self.nbits, 'w')
+    
   def process(self, data_in):
     total_size = data_in.size * data_in.dtype.itemsize
 
@@ -29,9 +33,14 @@ class XillybusPipe():
     self.last_time = stop_time-start_time
     return result
 
-  def read(self, n_bytes):
+  def read(self, n_bytes=None):
     start_time = time.time()
-    result = self.r.read(n_bytes)
+    
+    if (n_bytes is None):
+      result = self.r.read()
+    else:
+      result = self.r.read(n_bytes)
+
     stop_time = time.time()
     self.last_time = stop_time-start_time
     return result

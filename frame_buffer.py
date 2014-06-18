@@ -13,14 +13,16 @@ def raw_to_np(data):
   return np_arr[:,:,0:3]
 
 class FrameBuffer(threading.Thread):
-  def __init__(self):
+  def __init__(self, syncing = False):
     super(FrameBuffer, self).__init__()
     self.daemon = True
     self.pipe = XillybusPipe(32)
     self.is_open = True
     self.lock = threading.Condition()
-    self.frame = None
+    #self.frame = None
+    self.frame = (640*480*8)*'\x00'
     self.n_frames = 0
+    self.syncing = syncing
     self.sync = ''
 
   def run(self):
@@ -39,12 +41,17 @@ class FrameBuffer(threading.Thread):
         break
   
   def grab_frame(self):
-    data = self.pipe.read((640*480+1)*4)
-    self.frame = data[4:]
-    self.sync = data[0:4]
+    if (self.syncing):
+      data = self.pipe.read((640*480+1)*4)
+      self.frame = data[4:]
+      self.sync = data[0:4]
+    else:
+      self.frame = self.pipe.read(640*480*4)
+      #self.pipe.close()
+      #self.pipe.open()
 
   def sync_frame(self):
-    if self.frame == None:
+    if not self.syncing or self.frame == None:
       return False
     else:
       if self.sync != SYNC_TOKEN:
@@ -68,7 +75,6 @@ class FrameBuffer(threading.Thread):
     cv2.namedWindow('test')
     cv2.imshow('test',raw_to_np(self.frame))
     
-
 if __name__ == '__main__':
   fb = FrameBuffer()
   fb.start()
